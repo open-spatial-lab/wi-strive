@@ -129,8 +129,8 @@ class ChildcareDataParser:
     self.assembly = gpd.read_file(os.path.join(self.data_dir, 'geo', 'WI_Assembly_Districts_2022','WI_Assembly_Districts_2022.shp'))
     self.senate_districts = gpd.read_file(os.path.join(self.data_dir, 'geo', 'Wisconsin_Senate_Districts_(2022)','Wisconsin_Senate_Districts_(2022).shp'))
     self.congressional_districts = gpd.read_file(os.path.join(self.data_dir, 'geo', 'WI_Congressional_Districts_2002','WI_Congressional_Districts_2002.shp'))
-    self.tracts = gpd.read_file(os.path.join(self.data_dir, 'geo', 'tracts_2021.parquet'))
-    self.counties = gpd.read_file(os.path.join(self.data_dir, 'geo', 'counties_2019.parquet'))
+    self.tracts = gpd.read_parquet(os.path.join(self.data_dir, 'geo', 'tracts_2021.parquet'))
+    self.counties = gpd.read_parquet(os.path.join(self.data_dir, 'geo', 'counties_2019.parquet'))
     self.counties = self.counties[self.counties['STATEFP'] == '55']
     self.counties = self.counties.to_crs("EPSG:4326")
     self.assembly = self.assembly.to_crs("EPSG:4326")
@@ -153,7 +153,7 @@ class ChildcareDataParser:
     sjoin_tracts = self.tracts[['GEOID', 'geometry']]
 
     for df in [sjoin_assembly, sjoin_county, sjoin_senate, sjoin_congressional, sjoin_tracts]:
-      self.geocoded = gpd.sjoin(self.geocoded, df, how="left", op="within")
+      self.geocoded = gpd.sjoin(self.geocoded, df, how="left", predicate="within")
       self.geocoded = self.clean_gdf_join(self.geocoded)
     self.geocoded = self.geocoded.drop_duplicates(['ADDRESS',"Provider Number"])
     for col in ['Provider Number', 'Location Number']:
